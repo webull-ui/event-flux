@@ -5,7 +5,7 @@ import { serialize, deserialize } from 'json-immutable';
 import proxyStores from './utils/proxyStore';
 import RendererClient from './RendererClient';
 import { Emitter } from 'event-kit';
-import BrowserRendererClient from './BrowserRendererClient';
+import { filterOneStore } from './utils/filterStore';
 
 class IDGenerator {
   count = 0;
@@ -18,11 +18,14 @@ class IDGenerator {
   }
 }
 
-export default class RendererAppStore extends AppStore {
+export class RendererAppStore extends AppStore {
   emitter: Emitter;
   client: any;
   idGenerator = new IDGenerator();
   resolveMap = {};
+  storeShape: any;
+
+  static innerStores;
 
   asyncInit() {
     super.init();
@@ -53,6 +56,7 @@ export default class RendererAppStore extends AppStore {
       return new Promise((resolve, reject) => this.resolveMap[invokeId] = {resolve, reject});
     });
     this.stores = stores;
+    this.initRenderStores();
     resolve();
   }
 
@@ -96,4 +100,33 @@ export default class RendererAppStore extends AppStore {
   onDidWinMessage(callback) {
     return this.emitter.on('did-win-message', callback);
   }
+
+  initRenderStores() {
+    this.buildStores();
+    this.initStores(this);
+    this.startObserve();
+  }
+
+  getStore(key) {
+    return this.stores[key]
+  }
+
+  setStore(key, store) {
+    return this.stores[key] = store;
+  }
+
+  // 构建子Stores
+  buildStores() {}
+  // 初始化子Stores
+  initStores(parent) {}
+  // 开始监听子Store改变
+  startObserve() {}
+}
+
+export default function buildRendererAppStore(stores, onChange) {
+  RendererAppStore.innerStores = stores;
+  const storeShape = filterOneStore(RendererAppStore);
+  const appStore = new RendererAppStore(onChange);
+  appStore.storeShape = storeShape;
+  return appStore;
 }

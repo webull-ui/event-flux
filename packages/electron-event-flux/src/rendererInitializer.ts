@@ -1,4 +1,4 @@
-import RendererStore from './RendererAppStore';
+import buildRendererAppStore from './RendererAppStore';
 import { Emitter } from 'event-kit';
 
 function getQuery() {
@@ -76,7 +76,12 @@ class ParentWindowProxy {
   }
 }
 
-export default function rendererInit(renderHandler?: any, actionHandler?: any) {
+interface RenderOptions {
+  renderHandler?: any;
+  actionHandler?: any;
+};
+
+export default function rendererInit(rendererStores, options: RenderOptions = {}) {
   let query = getQuery();
   window['clientId'] = query['clientId'];
   window['parentId'] = query['parentId'];
@@ -87,7 +92,7 @@ export default function rendererInit(renderHandler?: any, actionHandler?: any) {
   }
   window['action'] = getAction();
 
-  const store = new RendererStore(renderHandler);
+  const store = buildRendererAppStore(rendererStores, options.renderHandler);
 
   const genProxy = (store, multiWinStore) => {
     return new Proxy(multiWinStore, {
@@ -110,7 +115,7 @@ export default function rendererInit(renderHandler?: any, actionHandler?: any) {
       window['parentWin'] = new ParentWindowProxy(store, window['parentId']);
     }
     store.onDidMessage((message) => {
-      console.log('message', message);
+      // console.log('message', message);
       let {action, url, parentId} = message;
       if (action === 'change-props') {
         window['action'] = url;
@@ -120,7 +125,7 @@ export default function rendererInit(renderHandler?: any, actionHandler?: any) {
         } else {
           window['parentWin']['parentId'] = parentId;
         }
-        actionHandler && actionHandler(window['action'], window['parentWin']);
+        options.actionHandler && options.actionHandler(window['action'], window['parentWin']);
       }
     });
     return store;
