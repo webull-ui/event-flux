@@ -20,7 +20,11 @@ export default function withState(stateSelector, storeSelector) {
     return function(props) {
       return (
         <StoreContext.Consumer>
-          {value => <Component {...props} {...storeSelector(value.stores)} {...stateSelector(value.state)}/>}
+          {value => <Component 
+            {...props}
+            {...storeSelector(value.stores, props)} 
+            {...stateSelector(value.state, props)}
+          />}
         </StoreContext.Consumer>
       );
     }
