@@ -16,6 +16,7 @@ export function parseStore(store, args: [] = []) {
 }
 
 const stateKeyReg = /^(\w+)Store$/;
+const storeKeyReg = /^(\w+)State$/
 
 // get store state key from store instance
 export function getStateKey(storeClass) {
@@ -30,12 +31,19 @@ export function getStateKey(storeClass) {
   return key;
 }
 
+/**
+ * generate stateKey according to storeKey , example 
+ * if the stateKey is userInfo , then the storeKey is userInfoState.
+ * even if the stateKey is userInfoState , the storeKey also is userInfoState.
+ * @param {*} storeClass 
+ */
 export function getStoreKey(storeClass) {
   if (storeClass.storeKey) return storeClass.storeKey;
   if (!storeClass.stateKey) {
     throw new Error(`Store ${storeClass.name} must provider storeKey or stateKey`);
   }
-  storeClass.storeKey = storeClass.stateKey + 'Store';
+  let res = storeKeyReg.exec(storeClass.stateKey);
+  storeClass.storeKey = res ? res[1] : storeClass.stateKey + 'Store';
   return storeClass.storeKey;
 }
 
