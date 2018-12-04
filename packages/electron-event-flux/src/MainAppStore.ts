@@ -32,11 +32,11 @@ function storeEnhancer(appStore, stores, storeShape) {
     deleteWin(clientId) {
       stores[winManagerStoreName].deleteWin(clientId);
     },
-    getStores(clientId) {
+    getStores(clientId, filter) {
       let stores = filterWindowStore(storeShape, winManagerStoreName, clientId);
       return JSON.stringify(stores);
     },
-    getInitStates(clientId) {
+    getInitStates(clientId, filter) {
       let filterState = filterWindowState(appStore.state, winManagerKey, clientId);
       return serialize(filterState);
     },

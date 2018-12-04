@@ -47,7 +47,10 @@ export default class ElectronMainClient {
         this.clientInfos.push({ clientId, filter });
         this.clients[clientId].postMessage({
           action: mainInitName,
-          data: [callbacks.getInitStates(clientId), callbacks.getStores(clientId)],
+          data: [
+            callbacks.getInitStates(clientId, filter), 
+            callbacks.getStores(clientId, filter)
+          ],
         }, '*');
       }
     });

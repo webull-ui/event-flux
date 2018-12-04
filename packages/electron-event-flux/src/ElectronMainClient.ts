@@ -57,11 +57,11 @@ export default class ElectronMainClient {
     // https://github.com/electron/electron/blob/master/docs/api/remote.md#remote-objects
   
     global[mainInitName + 'Stores'] = function(clientId) {
-      return callbacks.getStores(clientId);
+      return callbacks.getStores(clientId, clientMap[clientId].filter);
     }
   
     global[mainInitName] = (clientId) => {
-      return callbacks.getInitStates(clientId);
+      return callbacks.getInitStates(clientId, clientMap[clientId].filter);
     }
   
     ipcMain.on(renderDispatchName, (event, clientId, invokeId, stringifiedAction) => {
