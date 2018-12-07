@@ -2,7 +2,7 @@ import AppStore from 'event-flux/lib/AppStore';
 import objectMerge from './utils/objectMerge';
 import fillShape from './utils/fillShape';
 import { serialize, deserialize } from 'json-immutable';
-import proxyStores from './utils/proxyStore';
+import StoreProxyHandler from './utils/StoreProxyHandler';
 import RendererClient from './RendererClient';
 import { Emitter } from 'event-kit';
 import { filterOneStore } from './utils/filterStore';
@@ -24,7 +24,7 @@ export class RendererAppStore extends AppStore {
   idGenerator = new IDGenerator();
   resolveMap = {};
   storeShape: any;
-
+  storeProxyHandler = new StoreProxyHandler();
   static innerStores;
 
   asyncInit() {
@@ -50,7 +50,7 @@ export class RendererAppStore extends AppStore {
     this.state = initialState;
 
     const storeFilters = JSON.parse(store);
-    let stores = proxyStores(storeFilters, (action) => {
+    let stores = this.storeProxyHandler.proxyStores(storeFilters, (action) => {
       let invokeId = this.idGenerator.genID();
       this.client.forward(invokeId, serialize(action));
       return new Promise((resolve, reject) => this.resolveMap[invokeId] = {resolve, reject});

@@ -17,16 +17,19 @@ export default function withState(stateSelector, storeSelector) {
   stateSelector = unifySelector(stateSelector);
   return function(Component) {
 
-    return function(props) {
-      return (
-        <StoreContext.Consumer>
-          {value => <Component 
-            {...props}
-            {...storeSelector(value.stores, props)} 
-            {...stateSelector(value.state, props)}
-          />}
-        </StoreContext.Consumer>
-      );
+    return class Injector extends React.PureComponent<any> {
+      render() {
+        let props = this.props;
+        return (
+          <StoreContext.Consumer>
+            {value => <Component 
+              {...props}
+              {...storeSelector(value.stores, props)} 
+              {...stateSelector(value.state, props)}
+            />}
+          </StoreContext.Consumer>
+        );
+      }
     }
   }
 }

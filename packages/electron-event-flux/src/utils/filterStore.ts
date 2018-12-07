@@ -39,6 +39,13 @@ const storeBuilders = {
   Map: function (StoreClass, storeKey, stateKey, args) {
     let storeBuilder = () => this.buildStore(StoreClass, args);
     let storeObserver = (store, index) => {
+      if (!stateKey) {
+        return store.observe(state => 
+          this.setState({
+            [index]: state
+          })
+        );
+      }
       return store.observe(state => this.setState({
         [stateKey]: { ...this.state[stateKey], [index]: state },
       }));
@@ -131,6 +138,7 @@ function filterOneStore(StoreClass) {
           type: 'StoreMap',
           filters: filterOneStore(Store),
         };
+        if (options && options.directInsert) key = null;
         subStoreInfos.push(['Map', Store, storeName, key, options]);
       }
     }

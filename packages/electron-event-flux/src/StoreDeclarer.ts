@@ -37,10 +37,12 @@ function declareStoreList(Store, options?: StoreListDeclarerOptions) {
   return new StoreListDeclarer(Store, options);
 }
 
+// when directInsert is true, then the child state will set into the store directly.
 interface StoreMapDeclarerOptions {
   args?: [any];
   storeKey?: string;
   keys?: [string];
+  directInsert?: boolean;
 }
 const IS_STORE_MAP = '@@__STORE_MAP__@@';
 function StoreMapDeclarer(Store, options?: StoreMapDeclarerOptions) {
