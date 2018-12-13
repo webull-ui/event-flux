@@ -86,9 +86,12 @@ export default function rendererInit(rendererStores, options: RenderOptions = {}
   window['clientId'] = query['clientId'];
   window['parentId'] = query['parentId'];
 
+  // if (!window['clientId']) {  // Not a renderer window
+  //   return;
+  // }
   function getAction() {
     if (window['process']) return query['url'] || '/';
-    return window.location.pathname;
+    return window.location.pathname + window.location.search + window.location.hash;
   }
   window['action'] = getAction();
 
