@@ -185,6 +185,8 @@ export default class MyView extends React.PureComponent {
             <OneDemoView {...Todo3CountDemo} store={store} state={state}/>
           </div>
         );
+      default: 
+        return null;
     }
   }
 }

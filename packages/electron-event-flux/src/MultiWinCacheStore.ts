@@ -8,9 +8,11 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 
 class WindowManager {
   windows = [];
+  winHandler: any;
 
-  constructor() {
+  constructor(winHandler) {
     this.windows = [];
+    this.winHandler = winHandler;
     app.on('ready', () => this.ensureWindows());
   }
 
@@ -20,27 +22,7 @@ class WindowManager {
   }
   
   createWin(clientId) {
-    const window = new BrowserWindow({ 
-      show: false,
-      x: 0, y: 0,
-      width: 1280, height: 800, 
-      useContentSize: true,
-      backgroundColor: '#FFF',
-    });
-
-    const url = 'empty';
-    if (isDevelopment) {
-      window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?url=${url}&clientId=${clientId}`);
-    }
-    else {
-      window.loadURL(formatUrl({
-        pathname: path.join(__dirname, 'index.html'),
-        protocol: 'file',
-        slashes: true,
-        query: { url: url, clientId },
-      }));
-    }
-    return window;
+    return this.winHandler.createWindow(clientId);
   }
 
   ensureWindows() {
@@ -62,19 +44,22 @@ class WindowManager {
   }
 }
 
-global['windowManager'] = new WindowManager();
-
 class MultiWinCacheStore extends MultiWinStore {
   clientInfoMap = {};
   clientStateMap = {};
   clientIds = [];
   willQuit = false;
+  windowManager: WindowManager;
+
+  static createWindow;
 
   init() {
     let clients = this.getStorage().get('clients');
     if (!clients || clients.length === 0) {
       clients = [{ clientId: 'mainClient', url: '/', winState: { isMaximized: true } }];
     }
+    this.windowManager = new WindowManager(this);
+
     app.on('ready', () => {
       clients.forEach(item => this.createElectronWin(item.url, item.clientId, item.parentId, item.winState));
     });
@@ -141,7 +126,7 @@ class MultiWinCacheStore extends MultiWinStore {
     if (clientId) {
       win = this.createMainWindow(url, clientId, parentId, params);
     } else {
-      let winInfo = global['windowManager'].getWin();
+      let winInfo = this.windowManager.getWin();
       clientId = winInfo.clientId;
       win = winInfo.window;
       
@@ -168,21 +153,21 @@ class MultiWinCacheStore extends MultiWinStore {
     return { clientId, win };
   }
 
-  createMainWindow(url, clientId, parentId, params: any = {}) {
+  createWindow(clientId, url = 'empty', parentId = '', params) {
+    if (params == null) {
+      params = {
+        x: 0, y: 0,
+        width: 1280, height: 800, 
+        useContentSize: true,
+      };
+    }
     const window = new BrowserWindow({ 
       show: false,
       x: parseInt(params.x), y: parseInt(params.y),
       width: params.width, height: params.height, 
       useContentSize: params.useContentSize,
     });
-  
-    // if (params.isMaximized) window.maximize();
-    // if (params.isFullScreen) window.setFullScreen(true);
-  
-    window.on('ready-to-show', function() {
-      window.show();
-    });
-  
+
     if (isDevelopment) {
       window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?url=${url}&clientId=${clientId}&parentId=${parentId}`);
     }
@@ -191,19 +176,27 @@ class MultiWinCacheStore extends MultiWinStore {
         pathname: path.join(__dirname, 'index.html'),
         protocol: 'file',
         slashes: true,
-        query: { url, clientId, parentId },
+        query: { url: url, clientId, parentId },
       }));
     }
 
     // window.webContents.openDevTools();
     window.webContents.on('devtools-opened', () => {
-      window.focus()
+      window.focus();
       setImmediate(() => {
-        window.focus()
-      })
-    })
-  
-    return window
+        window.focus();
+      });
+    });
+
+    return window;
+  }
+
+  createMainWindow(url, clientId, parentId, params: any = {}) {
+    let window = this.createWindow(clientId, url, parentId, params);
+    window.on('ready-to-show', function() {
+      window.show();
+    });
+    return window;
   }
 
   changeAction(clientId, action) {

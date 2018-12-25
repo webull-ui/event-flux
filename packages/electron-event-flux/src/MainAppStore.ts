@@ -43,6 +43,9 @@ function storeEnhancer(appStore, stores, storeShape) {
     handleRendererMessage(payload) {
       const { store: storePath, method, args } = deserialize(payload);
       let store = findStore(stores, storePath);
+      if (!store[method]) {
+        throw new Error(`The method ${method} in Store ${store} is not defined`);
+      }
       try {
         let result = store[method].apply(store, args);
         return Promise.resolve(result);

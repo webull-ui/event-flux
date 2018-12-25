@@ -1,7 +1,6 @@
 var gulp = require('gulp');
 var babel = require('gulp-babel');
 var del = require('del');
-var gulpSequence = require('gulp-sequence');
 var ts = require("gulp-typescript");
 var merge = require('merge2'); 
 
@@ -37,4 +36,4 @@ gulp.task('ts', function () {
   ]);
 });
 
-gulp.task('default', gulpSequence('clean', 'babel', 'ts'));
+gulp.task('default', gulp.series('clean', 'babel', 'ts'));

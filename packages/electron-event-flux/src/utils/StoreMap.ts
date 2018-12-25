@@ -1,7 +1,6 @@
 import { initStore, disposeStore } from './storeBuilder';
 
 export default class StoreMap {
-  length = 0;
   storeMap = new Map();
   disposables = new Map();
   builder: any;
